@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Velo — Almacen de datos en memoria</title>
+  <meta name="description" content="Velo es un almacen de datos en memoria construido desde cero en Node.js puro. Protocolo RESP, Clean Architecture, sin dependencias externas." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══ TOPBAR ═══ -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="topbar-logo-dot"></span>
+    velo
+  </a>
+  <span class="topbar-version">v0.1.0</span>
+  <nav class="topbar-nav">
+    <a href="index.html">Inicio</a>
+    <a href="guide.html">Guia</a>
+    <a href="commands.html">Comandos</a>
+    <a href="internals.html">Internos</a>
+    <a href="roadmap.html">Roadmap</a>
+  </nav>
+  <button class="menu-btn" aria-label="Abrir menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</header>
+
+<!-- ═══ LAYOUT ═══ -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">En esta pagina</div>
+      <a class="sidebar-link" href="#overview"><span class="icon">📦</span>Que es Velo</a>
+      <a class="sidebar-link" href="#features"><span class="icon">✦</span>Caracteristicas</a>
+      <a class="sidebar-link" href="#quickstart"><span class="icon">⚡</span>Inicio rapido</a>
+      <a class="sidebar-link" href="#stack"><span class="icon">🧱</span>Stack tecnico</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Documentacion</div>
+      <a class="sidebar-link" href="guide.html"><span class="icon">📖</span>Guia de instalacion</a>
+      <a class="sidebar-link" href="commands.html"><span class="icon">⌨️</span>Referencia de comandos</a>
+      <a class="sidebar-link" href="internals.html"><span class="icon">🔬</span>Arquitectura e internos</a>
+      <a class="sidebar-link" href="roadmap.html"><span class="icon">🗺️</span>Roadmap</a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="content">
+
+      <!-- HERO -->
+      <div class="hero">
+        <div class="hero-eyebrow">
+          <span class="hero-eyebrow-dot"></span>
+          @low-level-js/velo
+        </div>
+        <h1>Almacen de datos<br /><span>en memoria</span></h1>
+        <p class="hero-tagline">
+          Construido desde cero en Node.js puro, sin una sola dependencia externa.
+          Protocolo RESP sobre TCP, Clean Architecture, TTL dual y un cliente REPL interactivo.
+        </p>
+        <div class="hero-badges">
+          <span class="badge green">Node.js &gt;= 20</span>
+          <span class="badge blue">ESM · sin dependencias</span>
+          <span class="badge">MIT License</span>
+          <span class="badge">Protocolo RESP</span>
+          <span class="badge">23 comandos · Fase 1</span>
+        </div>
+        <div class="hero-cta">
+          <a href="guide.html" class="btn btn-primary">Empezar →</a>
+          <a href="commands.html" class="btn btn-secondary">Ver comandos</a>
+        </div>
+      </div>
+
+      <!-- OVERVIEW -->
+      <section id="overview">
+        <h2>Que es Velo</h2>
+        <p>
+          <strong>Velo</strong> es un ejercicio practico de ingenieria de sistemas de bajo nivel en JavaScript.
+          No existe para reemplazar ningun software en produccion —  existe para demostrar que es posible
+          construir desde cero, con Node.js nativo, un servidor de almacen de datos completamente funcional.
+        </p>
+        <p>
+          Se conecta por red usando TCP, habla el protocolo <strong>RESP</strong> (el mismo que usan los almacenes
+          de datos en memoria modernos), guarda los datos en estructuras <code>Map</code> con soporte de TTL,
+          y expone un cliente de linea de comandos interactivo tipo REPL.
+        </p>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-body">
+            <strong>Autor: Joel Jaime &lt;joel@alblandino.com&gt;</strong>
+            Paquete <code>@low-level-js/velo</code> — licencia MIT.
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section id="features">
+        <h2>Caracteristicas</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon">🌐</div>
+            <div class="card-title">Servidor TCP nativo</div>
+            <div class="card-desc">Construido con el modulo <code>net</code> de Node.js. Soporta multiples conexiones simultaneas con un limite configurable.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Protocolo RESP</div>
+            <div class="card-desc">Parser incremental de Buffers TCP. Admite pipelining, comandos partidos en chunks y modo inline para compatibilidad con netcat.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🏗️</div>
+            <div class="card-title">Clean Architecture</div>
+            <div class="card-desc">Dominio, Aplicacion e Infraestructura completamente separados. Facil de extender con nuevos comandos o tipos de datos.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">⏱️</div>
+            <div class="card-title">TTL dual</div>
+            <div class="card-desc">Expiracion <em>lazy</em> en cada acceso (O(1)) mas un sweep periodico en segundo plano para liberar memoria de claves huerfanas.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🗄️</div>
+            <div class="card-title">16 bases de datos</div>
+            <div class="card-desc">Igual que los almacenes de datos clasicos: hasta 16 namespaces independientes seleccionables con <code>SELECT</code>.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">💻</div>
+            <div class="card-title">REPL interactivo</div>
+            <div class="card-desc">Cliente de linea de comandos con historial, colores por tipo de respuesta, prompt dinamico y comandos locales.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUICK START -->
+      <section id="quickstart">
+        <h2>Inicio rapido</h2>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-body">
+              <strong>Clonar el repositorio e instalar</strong>
+              <p>Solo requiere Node.js &gt;= 20. No hay <code>npm install</code> porque no existen dependencias.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-body">
+              <strong>Iniciar el servidor</strong>
+              <p>Por defecto escucha en <code>127.0.0.1:6380</code>. Configurable en el <code>.env</code>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-body">
+              <strong>Abrir el cliente en otra terminal</strong>
+              <p>El REPL se conecta automaticamente al host y puerto configurados.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-body">
+              <strong>Enviar tu primer comando</strong>
+              <p>El servidor responde en milisegundos.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">bash</span>
+          </div>
+          <pre># Terminal 1 — servidor
+make server
+
+# Terminal 2 — cliente
+make client</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">repl</span>
+          </div>
+          <pre><span class="resp-muted">velo 127.0.0.1:6380[0]></span> <span class="resp-ok">PING</span>
+<span class="resp-ok">PONG</span>
+
+<span class="resp-muted">velo 127.0.0.1:6380[0]></span> <span class="resp-ok">SET usuario "joel" EX 3600</span>
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">velo 127.0.0.1:6380[0]></span> <span class="resp-ok">GET usuario</span>
+<span class="resp-str">"joel"</span>
+
+<span class="resp-muted">velo 127.0.0.1:6380[0]></span> <span class="resp-ok">TTL usuario</span>
+<span class="resp-int">(integer) 3599</span>
+
+<span class="resp-muted">velo 127.0.0.1:6380[0]></span> <span class="resp-ok">INCR visitas</span>
+<span class="resp-int">(integer) 1</span>
+
+<span class="resp-muted">velo 127.0.0.1:6380[0]></span> <span class="resp-ok">MSET a 1 b 2 c 3</span>
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">velo 127.0.0.1:6380[0]></span> <span class="resp-ok">MGET a b c z</span>
+<span class="resp-int">1)</span> <span class="resp-str">"1"</span>
+<span class="resp-int">2)</span> <span class="resp-str">"2"</span>
+<span class="resp-int">3)</span> <span class="resp-str">"3"</span>
+<span class="resp-int">4)</span> <span class="resp-nil">(nil)</span>
+
+<span class="resp-muted">velo 127.0.0.1:6380[0]></span> <span class="resp-ok">SELECT 1</span>
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">velo 127.0.0.1:6380[1]></span> <span class="resp-ok">DBSIZE</span>
+<span class="resp-int">(integer) 0</span></pre>
+        </div>
+      </section>
+
+      <!-- STACK -->
+      <section id="stack">
+        <h2>Stack tecnico</h2>
+        <p>Velo no tiene dependencias externas. Todo el stack usa exclusivamente la libreria estandar de Node.js.</p>
+
+        <table>
+          <thead>
+            <tr><th>Modulo</th><th>Uso en Velo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>net</code></td><td>Servidor TCP y conexiones de cliente</td></tr>
+            <tr><td><code>fs</code></td><td>Lectura del archivo <code>.env</code> con <code>readFileSync</code></td></tr>
+            <tr><td><code>readline</code></td><td>REPL interactivo del cliente con historial de 200 entradas</td></tr>
+            <tr><td><code>events</code></td><td>Base <code>EventEmitter</code> del parser RESP</td></tr>
+            <tr><td><code>path</code></td><td>Resolucion de rutas para localizar el <code>.env</code></td></tr>
+            <tr><td><code>url</code></td><td><code>fileURLToPath</code> para obtener <code>__dirname</code> en ESM</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout tip">
+          <span class="callout-icon">✦</span>
+          <div class="callout-body">
+            <strong>Zero dependencies</strong>
+            El archivo <code>package.json</code> tiene las secciones <code>dependencies</code> y <code>devDependencies</code> vacias.
+            No hay que correr <code>npm install</code>.
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /layout -->
+
+<footer class="site-footer">
+  <p>
+    <strong>@low-level-js/velo</strong> &nbsp;·&nbsp; v0.1.0 &nbsp;·&nbsp;
+    <a href="mailto:joel@alblandino.com">Joel Jaime</a> &nbsp;·&nbsp; MIT License
+  </p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

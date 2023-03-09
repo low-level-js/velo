@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roadmap — Velo Docs</title>
+  <meta name="description" content="Plan de desarrollo de Velo: fases completadas y proximas funcionalidades." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="topbar-logo-dot"></span>velo
+  </a>
+  <span class="topbar-version">v0.1.0</span>
+  <nav class="topbar-nav">
+    <a href="index.html">Inicio</a>
+    <a href="guide.html">Guia</a>
+    <a href="commands.html">Comandos</a>
+    <a href="internals.html">Internos</a>
+    <a href="roadmap.html">Roadmap</a>
+  </nav>
+  <button class="menu-btn" aria-label="Abrir menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Roadmap</div>
+      <a class="sidebar-link" href="#vision"><span class="icon">🔭</span>Vision del proyecto</a>
+      <a class="sidebar-link" href="#fases"><span class="icon">📅</span>Fases de desarrollo</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Detalle por Fase</div>
+      <a class="sidebar-link" href="#fase1"><span class="icon">✅</span>Fase 1 — Strings</a>
+      <a class="sidebar-link" href="#fase2"><span class="icon">🔜</span>Fase 2 — Listas</a>
+      <a class="sidebar-link" href="#fase3"><span class="icon">🔜</span>Fase 3 — Hashes y Sets</a>
+      <a class="sidebar-link" href="#fase4"><span class="icon">🔜</span>Fase 4 — Persistencia</a>
+      <a class="sidebar-link" href="#fase5"><span class="icon">🔜</span>Fase 5 — Pub/Sub</a>
+      <a class="sidebar-link" href="#fase6"><span class="icon">🔜</span>Fase 6 — Cluster</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Contribuir</div>
+      <a class="sidebar-link" href="#agregar-comando"><span class="icon">➕</span>Agregar un comando</a>
+      <a class="sidebar-link" href="#convenciones"><span class="icon">📐</span>Convenciones</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="content">
+
+      <h1 class="mt-0">Roadmap</h1>
+      <p class="text-muted">Plan de desarrollo de Velo: que esta listo y que viene despues.</p>
+      <hr class="divider" />
+
+      <!-- ══ VISION ══ -->
+      <section id="vision">
+        <h2>Vision del proyecto</h2>
+        <p>
+          Velo nace como un ejercicio educativo de bajo nivel: construir desde cero, sin dependencias, un almacen de datos en memoria
+          accesible por red con el protocolo RESP. El objetivo no es reemplazar soluciones de produccion, sino entender exactamente
+          como funcionan por dentro: TCP, parsing binario, Clean Architecture, TTL, pub/sub, y eventual distribucion.
+        </p>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-body">
+            Cada fase agrega un grupo de funcionalidades coherente, sin romper lo anterior.
+            La arquitectura Clean hace posible agregar nuevos comandos y capas de infraestructura
+            sin tocar el dominio ni los casos de uso existentes.
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ FASES OVERVIEW ══ -->
+      <section id="fases">
+        <h2>Fases de desarrollo</h2>
+
+        <div class="diagram">
+          <img src="../.github/05.png" alt="Diagrama de roadmap con las 6 fases de Velo" />
+          <div class="diagram-caption">Diagrama — Roadmap de Velo: Fase 1 completada, Fases 2-6 planificadas</div>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <!-- ══ FASE 1 DETALLE ══ -->
+      <section id="fase1">
+        <h2>Fase 1 — Strings y Servidor <span class="badge badge-green" style="font-size:0.75rem;margin-left:0.5rem">Completada v0.1.0</span></h2>
+        <p>
+          La primera fase establece la base tecnica completa: protocolo, arquitectura, transporte y las operaciones mas
+          fundamentales de cualquier almacen clave-valor.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">Infraestructura TCP</div>
+            <div class="card-desc">Servidor TCP con <code>net.createServer</code>, limite configurable de conexiones, shutdown graceful con limpieza de sockets activos.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Parser RESP</div>
+            <div class="card-desc">Parser incremental de Buffers que maneja fragmentacion de paquetes TCP y pipelining (multiples comandos en un chunk). Soporte inline para netcat/telnet.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">15 Comandos String</div>
+            <div class="card-desc">SET con modificadores (NX, XX, EX, PX), GET, DEL, EXISTS, EXPIRE, TTL, INCR/DECR, MGET/MSET, APPEND, STRLEN, SETNX, SETEX, GETEX.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">8 Comandos Servidor</div>
+            <div class="card-desc">PING, ECHO, DBSIZE, FLUSHALL, KEYS (con glob), TYPE, RENAME, SELECT. 16 bases de datos aisladas por conexion.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">TTL Dual</div>
+            <div class="card-desc">Lazy expiry O(1) en cada acceso + sweep periodico configurable que limpia claves huerfanas sin bloquear el event loop.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">REPL de cliente</div>
+            <div class="card-desc">Cliente interactivo con historico de comandos, prompt dinamico (muestra la DB activa), salida coloreada por tipo RESP y sistema de cola para pipelining.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ FASE 2 ══ -->
+      <section id="fase2">
+        <h2>Fase 2 — Listas <span class="badge badge-yellow" style="font-size:0.75rem;margin-left:0.5rem">Pendiente</span></h2>
+        <p>
+          Las listas son la estructura de datos mas versatil: colas, stacks, logs de actividad, historial de eventos.
+          Se implementaran como arrays de JavaScript vinculados a una <code>KeyEntry</code> con <code>type: TipoDato.LIST</code>.
+        </p>
+
+        <table>
+          <thead><tr><th>Comando</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><code>LPUSH key val [val...]</code></td><td>Inserta uno o varios valores al inicio de la lista</td></tr>
+            <tr><td><code>RPUSH key val [val...]</code></td><td>Inserta uno o varios valores al final de la lista</td></tr>
+            <tr><td><code>LPOP key [count]</code></td><td>Extrae y devuelve elementos desde el inicio</td></tr>
+            <tr><td><code>RPOP key [count]</code></td><td>Extrae y devuelve elementos desde el final</td></tr>
+            <tr><td><code>LRANGE key start stop</code></td><td>Devuelve un rango de elementos (indices negativos desde el final)</td></tr>
+            <tr><td><code>LLEN key</code></td><td>Devuelve la longitud de la lista</td></tr>
+            <tr><td><code>LINDEX key index</code></td><td>Devuelve el elemento en la posicion indicada</td></tr>
+            <tr><td><code>LSET key index val</code></td><td>Reemplaza el elemento en la posicion indicada</td></tr>
+            <tr><td><code>LREM key count val</code></td><td>Elimina hasta <code>count</code> ocurrencias del valor</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ══ FASE 3 ══ -->
+      <section id="fase3">
+        <h2>Fase 3 — Hashes y Sets <span class="badge badge-yellow" style="font-size:0.75rem;margin-left:0.5rem">Pendiente</span></h2>
+
+        <h3>Hashes</h3>
+        <p>Objetos de campo/valor almacenados como <code>Map&lt;string, string&gt;</code>. Utiles para representar entidades como usuarios o sesiones.</p>
+        <table>
+          <thead><tr><th>Comando</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><code>HSET key field value [field value...]</code></td><td>Establece uno o varios campos</td></tr>
+            <tr><td><code>HGET key field</code></td><td>Devuelve el valor de un campo</td></tr>
+            <tr><td><code>HDEL key field [field...]</code></td><td>Elimina campos</td></tr>
+            <tr><td><code>HGETALL key</code></td><td>Devuelve todos los campos y valores</td></tr>
+            <tr><td><code>HKEYS / HVALS key</code></td><td>Devuelve solo los campos o solo los valores</td></tr>
+            <tr><td><code>HMSET / HMGET</code></td><td>Operaciones masivas (multiples campos)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Sets</h3>
+        <p>Colecciones de strings unicos sin orden. Implementados como <code>Set&lt;string&gt;</code> de JavaScript.</p>
+        <table>
+          <thead><tr><th>Comando</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><code>SADD key member [member...]</code></td><td>Agrega miembros al set</td></tr>
+            <tr><td><code>SREM key member [member...]</code></td><td>Elimina miembros</td></tr>
+            <tr><td><code>SMEMBERS key</code></td><td>Devuelve todos los miembros</td></tr>
+            <tr><td><code>SCARD key</code></td><td>Devuelve el numero de miembros</td></tr>
+            <tr><td><code>SISMEMBER key member</code></td><td>Devuelve 1 si el miembro existe</td></tr>
+            <tr><td><code>SINTER / SUNION / SDIFF</code></td><td>Interseccion, union y diferencia de sets</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ══ FASE 4 ══ -->
+      <section id="fase4">
+        <h2>Fase 4 — Persistencia <span class="badge badge-yellow" style="font-size:0.75rem;margin-left:0.5rem">Pendiente</span></h2>
+        <p>Sin persistencia, todos los datos mueren con el proceso. Hay dos estrategias clasicas:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">Snapshots (RDB)</div>
+            <div class="card-desc">
+              El store serializa su contenido completo a disco en intervalos configurables (o manualmente con BGSAVE).
+              Rapido de cargar, puede perder datos de la ultima ventana de tiempo entre snapshots.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Append-Only File (AOF)</div>
+            <div class="card-desc">
+              Cada escritura se registra en un archivo de log. Al reiniciar, el server reproduce el log para reconstruir el estado.
+              Mas durabilidad, archivos mas grandes. Se podra compactar con BGREWRITEAOF.
+            </div>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <span class="callout-icon">✦</span>
+          <div class="callout-body">
+            Ambas estrategias se implementaran con <code>fs.createWriteStream</code> y <code>fs.createReadStream</code> nativos.
+            Sin dependencias externas.
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ FASE 5 ══ -->
+      <section id="fase5">
+        <h2>Fase 5 — Pub/Sub <span class="badge badge-yellow" style="font-size:0.75rem;margin-left:0.5rem">Pendiente</span></h2>
+        <p>
+          El sistema de publicacion y suscripcion permite que los clientes reciban mensajes en tiempo real sin hacer polling.
+          Ideal para notificaciones, colas de eventos y comunicacion entre servicios.
+        </p>
+
+        <table>
+          <thead><tr><th>Comando</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><code>SUBSCRIBE canal [canal...]</code></td><td>Suscribe al cliente a uno o varios canales</td></tr>
+            <tr><td><code>UNSUBSCRIBE [canal...]</code></td><td>Cancela la suscripcion (todos los canales si no se especifica)</td></tr>
+            <tr><td><code>PUBLISH canal mensaje</code></td><td>Envia un mensaje a todos los suscriptores del canal</td></tr>
+            <tr><td><code>PUBSUB CHANNELS [patron]</code></td><td>Lista los canales activos (con suscriptores)</td></tr>
+            <tr><td><code>PUBSUB NUMSUB [canal...]</code></td><td>Devuelve el numero de suscriptores por canal</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          La implementacion usara un <code>PubSubBroker</code> como singleton que mantiene un
+          <code>Map&lt;canal, Set&lt;socket&gt;&gt;</code>. Cuando llega un PUBLISH, el broker itera el Set y escribe
+          a cada socket activo.
+        </p>
+      </section>
+
+      <!-- ══ FASE 6 ══ -->
+      <section id="fase6">
+        <h2>Fase 6 — Cluster <span class="badge badge-yellow" style="font-size:0.75rem;margin-left:0.5rem">Pendiente</span></h2>
+        <p>La fase final introduce distribucion real: multiples nodos, tolerancia a fallos y escalabilidad horizontal.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">Replicacion</div>
+            <div class="card-desc">Un nodo primario acepta escrituras y las replica a N nodos replica. Las replicas pueden servir lecturas. Failover automatico si el primario cae.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Sharding por hash slot</div>
+            <div class="card-desc">Las 16384 hash slots se distribuyen entre los nodos. El cliente recibe redirecciones MOVED y ASK cuando una clave vive en otro nodo.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Gossip protocol</div>
+            <div class="card-desc">Los nodos se comunican entre si periodicamente para detectar fallos, propagar el estado del cluster y elegir nuevos primarios.</div>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <!-- ══ AGREGAR COMANDO ══ -->
+      <section id="agregar-comando">
+        <h2>Como agregar un nuevo comando</h2>
+        <p>
+          Agregar un comando en Velo es un proceso de <strong>3 pasos</strong>. La arquitectura asegura que cada paso
+          sea aislado y no afecte al resto del sistema.
+        </p>
+
+        <div class="phase-row">
+          <div class="phase-num">1</div>
+          <div class="phase-body">
+            <div class="phase-title">Crear el handler del comando</div>
+            <div>
+              Crea una clase que implemente el metodo <code>execute(store, args, db)</code>. El archivo va en
+              <code>src/application/usecases/phaseX/categoria/NombreCommand.js</code>.
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block" style="margin-top:-0.5rem">
+          <div class="code-block-header"><span class="code-block-lang">javascript — src/application/usecases/phase2/lists/LpushCommand.js</span></div>
+          <pre><span class="kw">import</span> { RespSerializer  } <span class="kw">from</span> <span class="str">'../../../infrastructure/protocol/RespSerializer.js'</span>;
+<span class="kw">import</span> { KeyEntry, TipoDato } <span class="kw">from</span> <span class="str">'../../../domain/entities/KeyEntry.js'</span>;
+
+<span class="kw">export class</span> <span class="fn">LpushCommand</span> {
+  <span class="cm">/** @type {string} */</span>
+  nombre = <span class="str">'LPUSH'</span>;
+
+  <span class="cm">/**
+   * Inserta valores al inicio de una lista.
+   * @param {import('../../../domain/ports/IDataStore.js').IDataStore} store
+   * @param {string[]} args
+   * @param {number} db
+   */</span>
+  <span class="fn">execute</span>(store, args, db) {
+    <span class="kw">if</span> (args.length < <span class="num">2</span>) {
+      <span class="kw">return</span> RespSerializer.error(<span class="str">'ERR wrong number of arguments for LPUSH'</span>);
+    }
+
+    <span class="kw">const</span> [clave, ...valores] = args;
+    <span class="kw">let</span> entrada = store.get(db, clave);
+
+    <span class="kw">if</span> (!entrada) {
+      entrada = <span class="kw">new</span> <span class="fn">KeyEntry</span>([], TipoDato.LIST);
+    } <span class="kw">else if</span> (entrada.type !== TipoDato.LIST) {
+      <span class="kw">return</span> RespSerializer.error(<span class="str">'WRONGTYPE Operation against a key holding the wrong kind of value'</span>);
+    }
+
+    <span class="cm">// LPUSH inserta al inicio (unshift)</span>
+    entrada.value.unshift(...valores.reverse());
+    store.set(db, clave, entrada);
+
+    <span class="kw">return</span> RespSerializer.integer(entrada.value.length);
+  }
+}</pre>
+        </div>
+
+        <div class="phase-row">
+          <div class="phase-num">2</div>
+          <div class="phase-body">
+            <div class="phase-title">Registrar el comando</div>
+            <div>
+              Abre <code>src/application/CommandRegistry.js</code> e importa y registra la nueva clase.
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block" style="margin-top:-0.5rem">
+          <div class="code-block-header"><span class="code-block-lang">javascript — src/application/CommandRegistry.js (fragmento)</span></div>
+          <pre><span class="kw">import</span> { LpushCommand } <span class="kw">from</span> <span class="str">'./usecases/phase2/lists/LpushCommand.js'</span>;
+
+<span class="kw">export class</span> <span class="fn">CommandRegistry</span> {
+  <span class="fn">constructor</span>() {
+    <span class="kw">this</span>._handlers = <span class="kw">new</span> Map();
+    <span class="kw">this</span>._registrar();
+  }
+
+  _registrar() {
+    <span class="cm">// ... comandos existentes ...</span>
+
+    <span class="cm">// Fase 2 — Listas</span>
+    <span class="kw">const</span> listaComandos = [<span class="kw">new</span> <span class="fn">LpushCommand</span>()];
+    <span class="kw">for</span> (<span class="kw">const</span> cmd <span class="kw">of</span> listaComandos) {
+      <span class="kw">this</span>._handlers.set(cmd.nombre.toUpperCase(), cmd);
+    }
+  }
+}</pre>
+        </div>
+
+        <div class="phase-row">
+          <div class="phase-num">3</div>
+          <div class="phase-body">
+            <div class="phase-title">Probar el comando</div>
+            <div>
+              Arranca el servidor con <code>make server</code> y el cliente con <code>make client</code>.
+              El nuevo comando ya esta disponible de inmediato.
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block" style="margin-top:-0.5rem">
+          <div class="code-block-header"><span class="code-block-lang">bash — verificacion en el REPL</span></div>
+          <pre><span class="resp-muted">velo[0]&gt;</span> LPUSH tareas "leer docs" "escribir tests" "hacer PR"
+<span class="resp-int">:3</span>
+<span class="resp-muted">velo[0]&gt;</span> LRANGE tareas 0 -1
+<span class="resp-ok">1) "hacer PR"</span>
+<span class="resp-ok">2) "escribir tests"</span>
+<span class="resp-ok">3) "leer docs"</span></pre>
+        </div>
+
+        <div class="callout tip">
+          <span class="callout-icon">✦</span>
+          <div class="callout-body">
+            No se necesita reiniciar el servidor entre pruebas durante el desarrollo. Usa <code>make dev</code>
+            que arranca con la bandera <code>--watch</code> de Node.js para recarga automatica.
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ CONVENCIONES ══ -->
+      <section id="convenciones">
+        <h2>Convenciones del proyecto</h2>
+
+        <table>
+          <thead><tr><th>Regla</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Sin dependencias</strong></td>
+              <td>Solo modulos nativos de Node.js. No se permite ningun paquete en <code>dependencies</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>ESM puro</strong></td>
+              <td>Todos los archivos usan <code>import/export</code>. No CommonJS (<code>require</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Comentarios en espanol</strong></td>
+              <td>Todos los comentarios de codigo y logs se escriben en espanol sin tildes ni caracteres especiales.</td>
+            </tr>
+            <tr>
+              <td><strong>Un comando = un archivo</strong></td>
+              <td>Cada comando es su propia clase en su propio archivo. Nunca se agrupan multiples comandos.</td>
+            </tr>
+            <tr>
+              <td><strong>Sin logica en infraestructura</strong></td>
+              <td>Los archivos de <code>infrastructure/</code> no contienen logica de negocio. Solo transporte y serialización.</td>
+            </tr>
+            <tr>
+              <td><strong>Errores RESP siempre</strong></td>
+              <td>Cualquier error en un comando se devuelve como <code>RespSerializer.error('ERR ...')</code>. Nunca se lanza una excepcion no capturada al cliente.</td>
+            </tr>
+            <tr>
+              <td><strong>Node.js &gt;= 20</strong></td>
+              <td>Se requiere Node 20+ para ESM estable. Se recomienda Node 22 para la sintaxis <code>import ... with &#123; type: 'json' &#125;</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">
+  <p>
+    <strong>@low-level-js/velo</strong> &nbsp;·&nbsp; v0.1.0 &nbsp;·&nbsp;
+    <a href="mailto:joel@alblandino.com">Joel Jaime</a> &nbsp;·&nbsp; MIT License
+  </p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

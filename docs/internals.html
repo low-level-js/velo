@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arquitectura e internos — Velo Docs</title>
+  <meta name="description" content="Arquitectura Clean Architecture, protocolo RESP, InMemoryStore y estrategia TTL de Velo." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="topbar-logo-dot"></span>velo
+  </a>
+  <span class="topbar-version">v0.1.0</span>
+  <nav class="topbar-nav">
+    <a href="index.html">Inicio</a>
+    <a href="guide.html">Guia</a>
+    <a href="commands.html">Comandos</a>
+    <a href="internals.html">Internos</a>
+    <a href="roadmap.html">Roadmap</a>
+  </nav>
+  <button class="menu-btn" aria-label="Abrir menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Arquitectura</div>
+      <a class="sidebar-link" href="#capas"><span class="icon">🏗️</span>Capas del sistema</a>
+      <a class="sidebar-link" href="#flujo"><span class="icon">➡️</span>Flujo de un comando</a>
+      <a class="sidebar-link" href="#directorios"><span class="icon">📁</span>Estructura de archivos</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Almacen interno</div>
+      <a class="sidebar-link" href="#store"><span class="icon">🗄️</span>InMemoryStore</a>
+      <a class="sidebar-link" href="#ttl"><span class="icon">⏱️</span>Estrategia TTL</a>
+      <a class="sidebar-link" href="#keyentry"><span class="icon">🔑</span>Entidad KeyEntry</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="content">
+
+      <h1 class="mt-0">Arquitectura e internos</h1>
+      <p class="text-muted">Como esta construido Velo por dentro: capas, protocolo, almacenamiento y TTL.</p>
+      <hr class="divider" />
+
+      <!-- ══ CAPAS ══ -->
+      <section id="capas">
+        <h2>Capas del sistema — Clean Architecture</h2>
+        <p>
+          Velo sigue los principios de <strong>Clean Architecture</strong>: las capas internas no conocen nada sobre las capas externas.
+          El dominio no sabe nada de TCP. La aplicacion no sabe nada de RESP. La infraestructura no contiene logica de negocio.
+        </p>
+
+        <div class="diagram">
+          <img src="../.github/01.png" alt="Diagrama de arquitectura en capas de Velo" />
+          <div class="diagram-caption">Diagrama 1 — Arquitectura general y dependencias entre capas</div>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title" style="color:var(--purple)">Dominio</div>
+            <div class="card-desc">
+              La capa mas interna. Contiene la entidad <code>KeyEntry</code> (un dato almacenado con su valor, tipo y TTL) y los contratos JSDoc que definen como debe comportarse el almacen (<code>IDataStore</code>) y los comandos (<code>ICommandHandler</code>). No tiene ninguna dependencia externa.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:var(--accent)">Aplicacion</div>
+            <div class="card-desc">
+              Contiene los 23 casos de uso (comandos). Cada comando es una clase con el metodo <code>execute(store, args, db)</code> que implementa la logica pura del comando. El <code>CommandRegistry</code> los registra y despacha por nombre.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:var(--orange)">Infraestructura</div>
+            <div class="card-desc">
+              La capa externa. Contiene el servidor TCP (<code>TcpServer</code>), el ciclo de vida por conexion (<code>ClientConnection</code>), el parser RESP (<code>RespParser</code>), el serializador (<code>RespSerializer</code>) y el almacen en memoria (<code>InMemoryStore</code>).
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:var(--green)">Configuracion</div>
+            <div class="card-desc">
+              El modulo <code>Config.js</code> lee el archivo <code>.env</code> usando <code>fs.readFileSync</code> nativo, parsea los pares clave=valor, elimina comillas y exporta un objeto congelado (<code>Object.freeze</code>). Las variables de entorno del sistema tienen prioridad.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ FLUJO ══ -->
+      <section id="flujo">
+        <h2>Flujo de un comando de extremo a extremo</h2>
+        <p>Esta es la ruta completa que recorre un comando desde que el usuario lo escribe hasta que ve la respuesta en pantalla.</p>
+
+        <div class="diagram">
+          <img src="../.github/02.png" alt="Diagrama de secuencia del flujo de un comando" />
+          <div class="diagram-caption">Diagrama 2 — Flujo de datos para el comando SET nombre joel EX 60</div>
+        </div>
+
+        <ol style="padding-left:1.5rem; margin-top:1rem; line-height:2">
+          <li><strong>Usuario</strong> escribe <code>SET nombre joel EX 60</code> en el REPL.</li>
+          <li><strong>Cliente</strong> serializa el comando a formato RESP y lo envia por TCP.</li>
+          <li><strong>TcpServer</strong> recibe la conexion y crea un <code>ClientConnection</code> por socket.</li>
+          <li><strong>RespParser</strong> acumula los chunks de bytes y emite el evento <code>'comando'</code> con el array de tokens.</li>
+          <li><strong>CommandRegistry</strong> busca el handler <code>SetCommand</code> por nombre.</li>
+          <li><strong>SetCommand</strong> valida argumentos, consulta el store y almacena la nueva entrada.</li>
+          <li><strong>RespSerializer</strong> convierte la respuesta JS <code>{ ok: 'OK' }</code> a la cadena RESP <code>+OK\r\n</code>.</li>
+          <li><strong>Socket</strong> envia la cadena de vuelta al cliente, que la imprime en verde.</li>
+        </ol>
+      </section>
+
+      <!-- ══ DIRECTORIOS ══ -->
+      <section id="directorios">
+        <h2>Estructura de archivos</h2>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">tree</span></div>
+          <pre>.
+├── .env                         ← Configuracion: HOST, PORT, DB_COUNT...
+├── Makefile                     ← Atajos: make server / make client / make dev
+├── package.json                 ← @low-level-js/velo, sin dependencias
+└── src/
+    ├── server.js                ← Entry point: crea store, registry y servidor
+    ├── client.js                ← Entry point: REPL interactivo con readline
+    ├── config/
+    │   └── Config.js            ← Lee .env, exporta objeto congelado
+    ├── domain/
+    │   ├── entities/
+    │   │   └── KeyEntry.js      ← Entidad: value, type, expiresAt, isExpired()
+    │   └── ports/
+    │       ├── IDataStore.js    ← Contrato del almacen (JSDoc)
+    │       └── ICommandHandler.js ← Contrato de comandos (JSDoc)
+    ├── application/
+    │   ├── CommandRegistry.js   ← Registro y despacho de los 23 comandos
+    │   └── usecases/
+    │       └── phase1/
+    │           ├── strings/     ← 15 comandos: SET GET DEL EXISTS EXPIRE...
+    │           └── server/      ← 8 comandos: PING ECHO DBSIZE KEYS...
+    └── infrastructure/
+        ├── storage/
+        │   └── InMemoryStore.js ← Map&lt;db, Map&lt;key, KeyEntry&gt;&gt; + sweep
+        ├── protocol/
+        │   ├── RespParser.js    ← Parser incremental de Buffers TCP
+        │   └── RespSerializer.js ← Convierte JS → cadenas RESP
+        └── server/
+            ├── TcpServer.js     ← net.createServer + limite de conexiones
+            └── ClientConnection.js ← Ciclo de vida por socket</pre>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <!-- ══ STORE ══ -->
+      <section id="store">
+        <h2>InMemoryStore — el almacen</h2>
+        <p>
+          Todos los datos viven en <strong>memoria</strong> dentro de un objeto <code>InMemoryStore</code>.
+          La estructura interna es un <code>Map</code> anidado: la clave externa es el indice de la base de datos (numero),
+          y la clave interna es el nombre de la clave string.
+        </p>
+
+        <div class="diagram">
+          <img src="../.github/03.png" alt="Diagrama de la estructura interna del almacen en memoria" />
+          <div class="diagram-caption">Diagrama 3 — Estructura interna de InMemoryStore con multiples bases de datos</div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">javascript — estructura de datos</span></div>
+          <pre><span class="cm">// _bases es el mapa raiz del almacen</span>
+_bases: <span class="fn">Map</span>&lt;<span class="var">number</span>, <span class="fn">Map</span>&lt;<span class="var">string</span>, <span class="fn">KeyEntry</span>&gt;&gt;
+
+<span class="cm">// Ejemplo del estado interno:</span>
+{
+  <span class="num">0</span>: {
+    <span class="str">"nombre"</span>  → KeyEntry { value: <span class="str">"joel"</span>,   expiresAt: <span class="kw">null</span>   },
+    <span class="str">"sesion"</span>  → KeyEntry { value: <span class="str">"tok123"</span>, expiresAt: <span class="num">1741480800000</span> },
+    <span class="str">"visitas"</span> → KeyEntry { value: <span class="str">"42"</span>,    expiresAt: <span class="kw">null</span>   },
+  },
+  <span class="num">1</span>: {}, <span class="cm">// base 1 vacia</span>
+  <span class="cm">// ...</span>
+  <span class="num">15</span>: {}
+}</pre>
+        </div>
+
+        <h3>API principal del store</h3>
+        <table>
+          <thead><tr><th>Metodo</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><code>get(db, clave)</code></td><td>Devuelve la <code>KeyEntry</code> o <code>null</code> si no existe / expiro (lazy check)</td></tr>
+            <tr><td><code>set(db, clave, entry)</code></td><td>Guarda una <code>KeyEntry</code> en la base <code>db</code></td></tr>
+            <tr><td><code>del(db, ...claves)</code></td><td>Elimina una o varias claves, devuelve el numero eliminado</td></tr>
+            <tr><td><code>exists(db, clave)</code></td><td>Devuelve <code>true</code> si la clave existe y no expiro</td></tr>
+            <tr><td><code>keys(db, patron)</code></td><td>Devuelve claves activas que coinciden con el patron glob</td></tr>
+            <tr><td><code>dbsize(db)</code></td><td>Devuelve el numero de claves activas en la base</td></tr>
+            <tr><td><code>flushDb(db)</code></td><td>Elimina todas las claves de una base especifica</td></tr>
+            <tr><td><code>flushAll()</code></td><td>Elimina todas las claves de todas las bases</td></tr>
+            <tr><td><code>iniciarSweep()</code></td><td>Inicia el timer de limpieza periodica</td></tr>
+            <tr><td><code>detenerSweep()</code></td><td>Detiene el timer (llamado en shutdown)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ══ TTL ══ -->
+      <section id="ttl">
+        <h2>Estrategia de expiracion — TTL dual</h2>
+        <p>Velo usa una estrategia de doble capa para manejar la expiracion de claves, igual que lo hacen los almacenes de datos en memoria de produccion:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">1. Lazy expiry (expiracion perezosa)</div>
+            <div class="card-desc" style="margin-top:0.5rem">
+              Cada vez que se accede a una clave (en cualquier operacion <code>get()</code>), el store verifica si
+              <code>entry.isExpired()</code> devuelve <code>true</code>.
+              Si expiro, se elimina inmediatamente y se devuelve <code>null</code>.<br /><br />
+              <strong>Costo: O(1) por acceso.</strong> No agrega overhead si la clave no expiro.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">2. Sweep periodico</div>
+            <div class="card-desc" style="margin-top:0.5rem">
+              Un <code>setInterval</code> recorre periodicamente todas las bases de datos y elimina las claves expiradas,
+              aunque nadie las haya solicitado. El intervalo es configurable con <code>SWEEP_INTERVAL_MS</code>.<br /><br />
+              Se usa <code>.unref()</code> para que el timer no impida que Node.js cierre el proceso si no hay mas trabajo pendiente.
+            </div>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <span class="callout-icon">✦</span>
+          <div class="callout-body">
+            <strong>Por que dos estrategias?</strong>
+            El lazy expiry es eficiente para claves que se leen frecuentemente (se detecta en la primera lectura).
+            El sweep cubre el caso donde una clave nunca es leida despues de expirar —  sin el sweep, esa clave
+            consumiria memoria hasta que el proceso terminara.
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">javascript — fragmento de InMemoryStore.js</span></div>
+          <pre><span class="fn">get</span>(db, clave) {
+  <span class="kw">const</span> mapa = <span class="kw">this</span>._bases.get(db);
+  <span class="kw">const</span> entrada = mapa?.get(clave);
+  <span class="kw">if</span> (!entrada) <span class="kw">return null</span>;
+
+  <span class="cm">// 1. Lazy expiry — verificacion en cada acceso</span>
+  <span class="kw">if</span> (entrada.isExpired()) {
+    mapa.delete(clave);
+    <span class="kw">return null</span>;
+  }
+  <span class="kw">return</span> entrada;
+}
+
+<span class="fn">iniciarSweep</span>() {
+  <span class="cm">// 2. Sweep periodico — limpia en segundo plano</span>
+  <span class="kw">const</span> timer = setInterval(() => {
+    <span class="kw">const</span> ahora = Date.now();
+    <span class="kw">for</span> (<span class="kw">const</span> mapa <span class="kw">of this</span>._bases.values()) {
+      <span class="kw">for</span> (<span class="kw">const</span> [clave, entry] <span class="kw">of</span> mapa) {
+        <span class="kw">if</span> (entry.expiresAt !== <span class="kw">null</span> && entry.expiresAt &lt;= ahora) {
+          mapa.delete(clave);
+        }
+      }
+    }
+  }, <span class="kw">this</span>._sweepMs);
+
+  timer.unref(); <span class="cm">// no bloquea el cierre del proceso</span>
+}</pre>
+        </div>
+      </section>
+
+      <!-- ══ KEYENTRY ══ -->
+      <section id="keyentry">
+        <h2>Entidad KeyEntry</h2>
+        <p>Cada dato almacenado es una instancia de <code>KeyEntry</code>, la unica entidad del dominio:</p>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">javascript — KeyEntry.js</span></div>
+          <pre><span class="kw">export const</span> TipoDato = Object.freeze({
+  STRING: <span class="str">'string'</span>,
+  LIST:   <span class="str">'list'</span>,
+  HASH:   <span class="str">'hash'</span>,
+  SET:    <span class="str">'set'</span>,
+});
+
+<span class="kw">export class</span> <span class="fn">KeyEntry</span> {
+  <span class="fn">constructor</span>(value, type = TipoDato.STRING, expiresAt = <span class="kw">null</span>) {
+    <span class="kw">this</span>.value     = value;       <span class="cm">// string | Array | Map | Set</span>
+    <span class="kw">this</span>.type      = type;        <span class="cm">// TipoDato enum</span>
+    <span class="kw">this</span>.expiresAt = expiresAt;   <span class="cm">// timestamp ms | null</span>
+  }
+
+  <span class="fn">isExpired</span>() {
+    <span class="kw">return this</span>.expiresAt !== <span class="kw">null</span> && Date.now() > <span class="kw">this</span>.expiresAt;
+  }
+
+  <span class="fn">getTtlSegundos</span>() {
+    <span class="kw">if</span> (<span class="kw">this</span>.expiresAt === <span class="kw">null</span>) <span class="kw">return</span> <span class="num">-1</span>;
+    <span class="kw">return</span> Math.ceil((<span class="kw">this</span>.expiresAt - Date.now()) / <span class="num">1000</span>);
+  }
+}</pre>
+        </div>
+
+        <table>
+          <thead><tr><th>Propiedad</th><th>Tipo</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><code>value</code></td><td>string | Array | Map | Set</td><td>El dato almacenado. En Fase 1 siempre es string.</td></tr>
+            <tr><td><code>type</code></td><td>TipoDato enum</td><td>El tipo de la clave. Requerido para respetar WRONGTYPE.</td></tr>
+            <tr><td><code>expiresAt</code></td><td>number | null</td><td>Timestamp de expiracion en milisegundos. <code>null</code> significa sin expiracion.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">
+  <p>
+    <strong>@low-level-js/velo</strong> &nbsp;·&nbsp; v0.1.0 &nbsp;·&nbsp;
+    <a href="mailto:joel@alblandino.com">Joel Jaime</a> &nbsp;·&nbsp; MIT License
+  </p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

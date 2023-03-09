@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comandos — Velo Docs</title>
+  <meta name="description" content="Referencia completa de los 23 comandos de Velo: strings, servidor y opciones." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .cmd-index {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin: 1rem 0 2rem;
+    }
+
+    .cmd-index a {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .cmd-index a:hover {
+      background: #1f6feb1a;
+      text-decoration: none;
+    }
+
+    .option-table { margin-top: 0.5rem; margin-bottom: 0.75rem; }
+    .option-table td:first-child { font-family: var(--mono); color: #93c5fd; white-space: nowrap; }
+    .option-table td { font-size: 0.85rem; }
+
+    .returns {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 0.2rem 0.6rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .returns strong { color: var(--heading); }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="topbar-logo-dot"></span>velo
+  </a>
+  <span class="topbar-version">v0.1.0</span>
+  <nav class="topbar-nav">
+    <a href="index.html">Inicio</a>
+    <a href="guide.html">Guia</a>
+    <a href="commands.html">Comandos</a>
+    <a href="internals.html">Internos</a>
+    <a href="roadmap.html">Roadmap</a>
+  </nav>
+  <button class="menu-btn" aria-label="Abrir menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Strings · 15 cmds</div>
+      <a class="sidebar-link" href="#SET"><span class="icon"></span>SET</a>
+      <a class="sidebar-link" href="#GET"><span class="icon"></span>GET</a>
+      <a class="sidebar-link" href="#DEL"><span class="icon"></span>DEL</a>
+      <a class="sidebar-link" href="#EXISTS"><span class="icon"></span>EXISTS</a>
+      <a class="sidebar-link" href="#EXPIRE"><span class="icon"></span>EXPIRE</a>
+      <a class="sidebar-link" href="#TTL"><span class="icon"></span>TTL</a>
+      <a class="sidebar-link" href="#INCR"><span class="icon"></span>INCR</a>
+      <a class="sidebar-link" href="#DECR"><span class="icon"></span>DECR</a>
+      <a class="sidebar-link" href="#MGET"><span class="icon"></span>MGET</a>
+      <a class="sidebar-link" href="#MSET"><span class="icon"></span>MSET</a>
+      <a class="sidebar-link" href="#APPEND"><span class="icon"></span>APPEND</a>
+      <a class="sidebar-link" href="#STRLEN"><span class="icon"></span>STRLEN</a>
+      <a class="sidebar-link" href="#SETNX"><span class="icon"></span>SETNX</a>
+      <a class="sidebar-link" href="#SETEX"><span class="icon"></span>SETEX</a>
+      <a class="sidebar-link" href="#GETEX"><span class="icon"></span>GETEX</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Servidor · 8 cmds</div>
+      <a class="sidebar-link" href="#PING"><span class="icon"></span>PING</a>
+      <a class="sidebar-link" href="#ECHO"><span class="icon"></span>ECHO</a>
+      <a class="sidebar-link" href="#DBSIZE"><span class="icon"></span>DBSIZE</a>
+      <a class="sidebar-link" href="#FLUSHALL"><span class="icon"></span>FLUSHALL</a>
+      <a class="sidebar-link" href="#KEYS"><span class="icon"></span>KEYS</a>
+      <a class="sidebar-link" href="#TYPE"><span class="icon"></span>TYPE</a>
+      <a class="sidebar-link" href="#RENAME"><span class="icon"></span>RENAME</a>
+      <a class="sidebar-link" href="#SELECT"><span class="icon"></span>SELECT</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="content">
+
+      <h1 class="mt-0">Referencia de comandos</h1>
+      <p class="text-muted">Fase 1 — 23 comandos. Cada uno devuelve una respuesta en formato RESP.</p>
+
+      <div class="cmd-index">
+        <a href="#SET">SET</a><a href="#GET">GET</a><a href="#DEL">DEL</a><a href="#EXISTS">EXISTS</a>
+        <a href="#EXPIRE">EXPIRE</a><a href="#TTL">TTL</a><a href="#INCR">INCR</a><a href="#DECR">DECR</a>
+        <a href="#MGET">MGET</a><a href="#MSET">MSET</a><a href="#APPEND">APPEND</a><a href="#STRLEN">STRLEN</a>
+        <a href="#SETNX">SETNX</a><a href="#SETEX">SETEX</a><a href="#GETEX">GETEX</a>
+        <a href="#PING">PING</a><a href="#ECHO">ECHO</a><a href="#DBSIZE">DBSIZE</a>
+        <a href="#FLUSHALL">FLUSHALL</a><a href="#KEYS">KEYS</a><a href="#TYPE">TYPE</a>
+        <a href="#RENAME">RENAME</a><a href="#SELECT">SELECT</a>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- ══ STRINGS ══ -->
+      <h2 id="strings-section">Comandos de Strings</h2>
+
+      <!-- SET -->
+      <div class="cmd-block" id="SET">
+        <div class="cmd-block-header">
+          <span class="cmd-name">SET</span>
+          <span class="cmd-syntax">clave valor [EX seg] [PX ms] [NX] [XX]</span>
+          <span class="tag note">Fase 1</span>
+        </div>
+        <div class="cmd-body">
+          <p>Almacena un valor de texto bajo una clave. Si la clave ya existia, la sobreescribe (salvo que se use <code>NX</code> o <code>XX</code>). Al establecer un nuevo valor, la expiracion anterior se elimina —  a menos que se especifique una nueva con <code>EX</code> o <code>PX</code>.</p>
+          <div class="returns">Retorna: <strong>OK</strong> al guardar, <strong>nil</strong> si NX/XX impide la escritura</div>
+          <table class="option-table">
+            <thead><tr><th>Opcion</th><th>Descripcion</th></tr></thead>
+            <tbody>
+              <tr><td>EX N</td><td>Expira en N segundos a partir de ahora</td></tr>
+              <tr><td>PX N</td><td>Expira en N milisegundos a partir de ahora</td></tr>
+              <tr><td>NX</td><td>Solo escribe si la clave <strong>no</strong> existe (Set if Not eXists)</td></tr>
+              <tr><td>XX</td><td>Solo escribe si la clave <strong>ya</strong> existe (Set if eXists)</td></tr>
+            </tbody>
+          </table>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> SET nombre "joel"
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> SET sesion "token123" EX 3600
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> SET lock "p1" NX
+<span class="resp-ok">OK</span>                  <span class="resp-muted"># no existia, se establece</span>
+
+<span class="resp-muted">&gt;</span> SET lock "p2" NX
+<span class="resp-nil">(nil)</span>              <span class="resp-muted"># ya existia, NX lo impide</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- GET -->
+      <div class="cmd-block" id="GET">
+        <div class="cmd-block-header">
+          <span class="cmd-name">GET</span>
+          <span class="cmd-syntax">clave</span>
+        </div>
+        <div class="cmd-body">
+          <p>Devuelve el valor de tipo string asociado a la clave. Si la clave no existe, expiro o es de un tipo distinto a string, devuelve <code>nil</code> o un error WRONGTYPE según el caso.</p>
+          <div class="returns">Retorna: <strong>Bulk String</strong> con el valor, o <strong>nil</strong></div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> GET nombre
+<span class="resp-str">"joel"</span>
+
+<span class="resp-muted">&gt;</span> GET noExiste
+<span class="resp-nil">(nil)</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEL -->
+      <div class="cmd-block" id="DEL">
+        <div class="cmd-block-header">
+          <span class="cmd-name">DEL</span>
+          <span class="cmd-syntax">clave [clave ...]</span>
+        </div>
+        <div class="cmd-body">
+          <p>Elimina una o varias claves de la base de datos activa. Las claves que no existen son ignoradas (no cuentan en el total eliminado).</p>
+          <div class="returns">Retorna: <strong>Integer</strong> — numero de claves efectivamente eliminadas</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> DEL nombre sesion contador
+<span class="resp-int">(integer) 3</span>
+
+<span class="resp-muted">&gt;</span> DEL noExiste
+<span class="resp-int">(integer) 0</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXISTS -->
+      <div class="cmd-block" id="EXISTS">
+        <div class="cmd-block-header">
+          <span class="cmd-name">EXISTS</span>
+          <span class="cmd-syntax">clave [clave ...]</span>
+        </div>
+        <div class="cmd-body">
+          <p>Verifica si las claves existen en la base de datos activa. Si se especifica la misma clave varias veces, suma una por cada aparicion.</p>
+          <div class="returns">Retorna: <strong>Integer</strong> — numero de claves existentes (contando repetidas)</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> EXISTS nombre
+<span class="resp-int">(integer) 1</span>
+
+<span class="resp-muted">&gt;</span> EXISTS nombre nombre nombre
+<span class="resp-int">(integer) 3</span>       <span class="resp-muted"># misma clave cuenta 3 veces</span>
+
+<span class="resp-muted">&gt;</span> EXISTS noExiste
+<span class="resp-int">(integer) 0</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPIRE -->
+      <div class="cmd-block" id="EXPIRE">
+        <div class="cmd-block-header">
+          <span class="cmd-name">EXPIRE</span>
+          <span class="cmd-syntax">clave segundos</span>
+        </div>
+        <div class="cmd-body">
+          <p>Establece un tiempo de expiracion en segundos para una clave existente. Cuando el tiempo expira, la clave se elimina automaticamente. Si la clave ya tenia una expiracion, la sobreescribe.</p>
+          <div class="returns">Retorna: <strong>1</strong> si se establecio, <strong>0</strong> si la clave no existe</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> SET token "abc123"
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> EXPIRE token 60
+<span class="resp-int">(integer) 1</span>
+
+<span class="resp-muted">&gt;</span> EXPIRE noExiste 60
+<span class="resp-int">(integer) 0</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- TTL -->
+      <div class="cmd-block" id="TTL">
+        <div class="cmd-block-header">
+          <span class="cmd-name">TTL</span>
+          <span class="cmd-syntax">clave</span>
+        </div>
+        <div class="cmd-body">
+          <p>Devuelve el tiempo de vida restante de una clave en segundos.</p>
+          <div class="returns">Retorna: <strong>N</strong> segundos restantes, <strong>-1</strong> sin expiracion, <strong>-2</strong> no existe</div>
+          <table class="option-table">
+            <thead><tr><th>Valor</th><th>Significado</th></tr></thead>
+            <tbody>
+              <tr><td>N &gt; 0</td><td>Segundos restantes antes de que expire</td></tr>
+              <tr><td>-1</td><td>La clave existe pero no tiene expiracion configurada</td></tr>
+              <tr><td>-2</td><td>La clave no existe o ya expiro</td></tr>
+            </tbody>
+          </table>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> TTL token
+<span class="resp-int">(integer) 58</span>
+
+<span class="resp-muted">&gt;</span> TTL nombre      <span class="resp-muted"># sin expiracion</span>
+<span class="resp-int">(integer) -1</span>
+
+<span class="resp-muted">&gt;</span> TTL fantasma    <span class="resp-muted"># no existe</span>
+<span class="resp-int">(integer) -2</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- INCR -->
+      <div class="cmd-block" id="INCR">
+        <div class="cmd-block-header">
+          <span class="cmd-name">INCR</span>
+          <span class="cmd-syntax">clave</span>
+        </div>
+        <div class="cmd-body">
+          <p>Incrementa en 1 el valor entero de una clave. Si la clave no existe, la inicializa en <code>0</code> antes de incrementar. Si el valor no es un entero valido, devuelve un error. Preserva la expiracion existente.</p>
+          <div class="returns">Retorna: <strong>Integer</strong> — el nuevo valor despues del incremento</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> INCR visitas
+<span class="resp-int">(integer) 1</span>
+
+<span class="resp-muted">&gt;</span> INCR visitas
+<span class="resp-int">(integer) 2</span>
+
+<span class="resp-muted">&gt;</span> INCR visitas
+<span class="resp-int">(integer) 3</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- DECR -->
+      <div class="cmd-block" id="DECR">
+        <div class="cmd-block-header">
+          <span class="cmd-name">DECR</span>
+          <span class="cmd-syntax">clave</span>
+        </div>
+        <div class="cmd-body">
+          <p>Decrementa en 1 el valor entero de una clave. Si la clave no existe, la inicializa en <code>0</code> antes de decrementar. Preserva la expiracion existente.</p>
+          <div class="returns">Retorna: <strong>Integer</strong> — el nuevo valor despues del decremento</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> SET inventario "10"
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> DECR inventario
+<span class="resp-int">(integer) 9</span>
+
+<span class="resp-muted">&gt;</span> DECR inventario
+<span class="resp-int">(integer) 8</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- MGET -->
+      <div class="cmd-block" id="MGET">
+        <div class="cmd-block-header">
+          <span class="cmd-name">MGET</span>
+          <span class="cmd-syntax">clave [clave ...]</span>
+        </div>
+        <div class="cmd-body">
+          <p>Obtiene los valores de multiples claves en un solo round-trip de red. Las claves que no existen, expiraron o son de un tipo no-string devuelven <code>nil</code> en su posicion correspondiente.</p>
+          <div class="returns">Retorna: <strong>Array</strong> con un elemento por cada clave solicitada</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> MSET a "uno" b "dos" c "tres"
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> MGET a b c z
+<span class="resp-int">1)</span> <span class="resp-str">"uno"</span>
+<span class="resp-int">2)</span> <span class="resp-str">"dos"</span>
+<span class="resp-int">3)</span> <span class="resp-str">"tres"</span>
+<span class="resp-int">4)</span> <span class="resp-nil">(nil)</span>       <span class="resp-muted"># "z" no existe</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- MSET -->
+      <div class="cmd-block" id="MSET">
+        <div class="cmd-block-header">
+          <span class="cmd-name">MSET</span>
+          <span class="cmd-syntax">clave valor [clave valor ...]</span>
+        </div>
+        <div class="cmd-body">
+          <p>Almacena multiples pares clave-valor de forma atomica. Siempre tiene exito — nunca falla. Las claves existentes son sobreescritas.</p>
+          <div class="returns">Retorna: <strong>OK</strong> siempre</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> MSET usuario "joel" pais "mx" version "1"
+<span class="resp-ok">OK</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPEND -->
+      <div class="cmd-block" id="APPEND">
+        <div class="cmd-block-header">
+          <span class="cmd-name">APPEND</span>
+          <span class="cmd-syntax">clave valor</span>
+        </div>
+        <div class="cmd-body">
+          <p>Concatena un string al final del valor existente de la clave. Si la clave no existe, se crea con el valor proporcionado (equivale a <code>SET</code>).</p>
+          <div class="returns">Retorna: <strong>Integer</strong> — longitud en bytes del string resultante</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> APPEND saludo "Hola"
+<span class="resp-int">(integer) 4</span>
+
+<span class="resp-muted">&gt;</span> APPEND saludo ", mundo"
+<span class="resp-int">(integer) 11</span>
+
+<span class="resp-muted">&gt;</span> GET saludo
+<span class="resp-str">"Hola, mundo"</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- STRLEN -->
+      <div class="cmd-block" id="STRLEN">
+        <div class="cmd-block-header">
+          <span class="cmd-name">STRLEN</span>
+          <span class="cmd-syntax">clave</span>
+        </div>
+        <div class="cmd-body">
+          <p>Devuelve la longitud en bytes del valor string de la clave. Si la clave no existe, devuelve 0. Si la clave es de otro tipo, devuelve un error.</p>
+          <div class="returns">Retorna: <strong>Integer</strong> — longitud en bytes</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> STRLEN saludo
+<span class="resp-int">(integer) 11</span>
+
+<span class="resp-muted">&gt;</span> STRLEN noExiste
+<span class="resp-int">(integer) 0</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETNX -->
+      <div class="cmd-block" id="SETNX">
+        <div class="cmd-block-header">
+          <span class="cmd-name">SETNX</span>
+          <span class="cmd-syntax">clave valor</span>
+        </div>
+        <div class="cmd-body">
+          <p>Establece el valor solo si la clave <strong>no</strong> existe (<em>Set if Not eXists</em>). Util para implementar bloqueos distribuidos simples o inicializaciones de una sola vez.</p>
+          <div class="returns">Retorna: <strong>1</strong> si se establecio, <strong>0</strong> si la clave ya existia</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> SETNX mutex "proceso_1"
+<span class="resp-int">(integer) 1</span>       <span class="resp-muted"># establecido</span>
+
+<span class="resp-muted">&gt;</span> SETNX mutex "proceso_2"
+<span class="resp-int">(integer) 0</span>       <span class="resp-muted"># ya existia, ignorado</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETEX -->
+      <div class="cmd-block" id="SETEX">
+        <div class="cmd-block-header">
+          <span class="cmd-name">SETEX</span>
+          <span class="cmd-syntax">clave segundos valor</span>
+        </div>
+        <div class="cmd-body">
+          <p>Almacena un valor con expiracion en segundos. Es equivalente a <code>SET clave valor EX segundos</code>. El orden de los argumentos es: nombre de clave, tiempo, valor.</p>
+          <div class="returns">Retorna: <strong>OK</strong></div>
+          <div class="callout info">
+            <span class="callout-icon">ℹ️</span>
+            <div class="callout-body">Atencion al orden: <code>SETEX clave <u>segundos</u> valor</code> — el tiempo va antes del valor.</div>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> SETEX sesion 3600 "token_abc"
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> TTL sesion
+<span class="resp-int">(integer) 3600</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- GETEX -->
+      <div class="cmd-block" id="GETEX">
+        <div class="cmd-block-header">
+          <span class="cmd-name">GETEX</span>
+          <span class="cmd-syntax">clave [EX seg | PX ms | EXAT ts | PXAT ts_ms | PERSIST]</span>
+        </div>
+        <div class="cmd-body">
+          <p>Obtiene el valor de una clave y opcionalmente modifica su expiracion en la misma operacion. Sin opciones, se comporta igual que <code>GET</code>.</p>
+          <div class="returns">Retorna: <strong>Bulk String</strong> con el valor, o <strong>nil</strong></div>
+          <table class="option-table">
+            <thead><tr><th>Opcion</th><th>Descripcion</th></tr></thead>
+            <tbody>
+              <tr><td>EX N</td><td>Nueva expiracion en N segundos</td></tr>
+              <tr><td>PX N</td><td>Nueva expiracion en N milisegundos</td></tr>
+              <tr><td>EXAT N</td><td>Expira en el timestamp Unix N (segundos)</td></tr>
+              <tr><td>PXAT N</td><td>Expira en el timestamp Unix N (milisegundos)</td></tr>
+              <tr><td>PERSIST</td><td>Elimina la expiracion — la clave se vuelve persistente</td></tr>
+            </tbody>
+          </table>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> GETEX sesion EX 7200
+<span class="resp-str">"token_abc"</span>    <span class="resp-muted"># y renueva el TTL a 7200s</span>
+
+<span class="resp-muted">&gt;</span> GETEX sesion PERSIST
+<span class="resp-str">"token_abc"</span>    <span class="resp-muted"># y elimina la expiracion</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- ══ SERVER ══ -->
+      <h2 id="server-section">Comandos de servidor</h2>
+
+      <!-- PING -->
+      <div class="cmd-block" id="PING">
+        <div class="cmd-block-header">
+          <span class="cmd-name">PING</span>
+          <span class="cmd-syntax">[mensaje]</span>
+        </div>
+        <div class="cmd-body">
+          <p>Verifica la conectividad con el servidor. Sin argumento devuelve <code>PONG</code>. Con argumento, devuelve el argumento como eco.</p>
+          <div class="returns">Retorna: <strong>PONG</strong> o <strong>el mensaje</strong> proporcionado</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> PING
+<span class="resp-ok">PONG</span>
+
+<span class="resp-muted">&gt;</span> PING "sigo vivo"
+<span class="resp-str">"sigo vivo"</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ECHO -->
+      <div class="cmd-block" id="ECHO">
+        <div class="cmd-block-header">
+          <span class="cmd-name">ECHO</span>
+          <span class="cmd-syntax">mensaje</span>
+        </div>
+        <div class="cmd-body">
+          <p>Devuelve el mensaje tal cual como un Bulk String. Util para pruebas de round-trip y depuracion.</p>
+          <div class="returns">Retorna: <strong>Bulk String</strong> con el mensaje</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> ECHO "hola mundo"
+<span class="resp-str">"hola mundo"</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- DBSIZE -->
+      <div class="cmd-block" id="DBSIZE">
+        <div class="cmd-block-header">
+          <span class="cmd-name">DBSIZE</span>
+          <span class="cmd-syntax"></span>
+        </div>
+        <div class="cmd-body">
+          <p>Devuelve el numero de claves activas (no expiradas) en la base de datos activa de la conexion actual.</p>
+          <div class="returns">Retorna: <strong>Integer</strong> — numero de claves</div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> DBSIZE
+<span class="resp-int">(integer) 5</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- FLUSHALL -->
+      <div class="cmd-block" id="FLUSHALL">
+        <div class="cmd-block-header">
+          <span class="cmd-name">FLUSHALL</span>
+          <span class="cmd-syntax"></span>
+        </div>
+        <div class="cmd-body">
+          <p>Elimina todas las claves de <strong>todas</strong> las bases de datos (no solo la activa). Operacion destructiva e irreversible.</p>
+          <div class="returns">Retorna: <strong>OK</strong></div>
+          <div class="callout warn">
+            <span class="callout-icon">⚠️</span>
+            <div class="callout-body"><strong>Cuidado</strong> — elimina los datos de todas las bases de datos de todas las conexiones activas, no solo de la tuya.</div>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> FLUSHALL
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> DBSIZE
+<span class="resp-int">(integer) 0</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- KEYS -->
+      <div class="cmd-block" id="KEYS">
+        <div class="cmd-block-header">
+          <span class="cmd-name">KEYS</span>
+          <span class="cmd-syntax">patron</span>
+        </div>
+        <div class="cmd-body">
+          <p>Devuelve todas las claves de la base de datos activa que coincidan con el patron glob. Solo devuelve claves activas (las expiradas se filtran).</p>
+          <div class="returns">Retorna: <strong>Array</strong> con las claves que coinciden</div>
+          <table class="option-table">
+            <thead><tr><th>Patron</th><th>Coincide con</th></tr></thead>
+            <tbody>
+              <tr><td>*</td><td>Cualquier clave (lista todo)</td></tr>
+              <tr><td>h?llo</td><td>hallo, hello, hillo (un caracter cualquiera)</td></tr>
+              <tr><td>h*llo</td><td>hllo, heeello (cualquier número de caracteres)</td></tr>
+              <tr><td>user:*</td><td>Todas las claves que empiezan con "user:"</td></tr>
+            </tbody>
+          </table>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> KEYS *
+<span class="resp-int">1)</span> <span class="resp-str">"nombre"</span>
+<span class="resp-int">2)</span> <span class="resp-str">"visitas"</span>
+<span class="resp-int">3)</span> <span class="resp-str">"user:42"</span>
+
+<span class="resp-muted">&gt;</span> KEYS user:*
+<span class="resp-int">1)</span> <span class="resp-str">"user:42"</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- TYPE -->
+      <div class="cmd-block" id="TYPE">
+        <div class="cmd-block-header">
+          <span class="cmd-name">TYPE</span>
+          <span class="cmd-syntax">clave</span>
+        </div>
+        <div class="cmd-body">
+          <p>Devuelve el tipo de dato almacenado bajo una clave.</p>
+          <div class="returns">Retorna: <strong>Simple String</strong> con el tipo</div>
+          <table class="option-table">
+            <thead><tr><th>Respuesta</th><th>Significado</th></tr></thead>
+            <tbody>
+              <tr><td>string</td><td>Valor de texto (el unico tipo disponible en Fase 1)</td></tr>
+              <tr><td>list</td><td>Lista (disponible en Fase 2)</td></tr>
+              <tr><td>hash</td><td>Hash / mapa (disponible en Fase 3)</td></tr>
+              <tr><td>set</td><td>Conjunto (disponible en Fase 4)</td></tr>
+              <tr><td>none</td><td>La clave no existe o expiro</td></tr>
+            </tbody>
+          </table>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> TYPE nombre
+<span class="resp-ok">string</span>
+
+<span class="resp-muted">&gt;</span> TYPE noExiste
+<span class="resp-ok">none</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- RENAME -->
+      <div class="cmd-block" id="RENAME">
+        <div class="cmd-block-header">
+          <span class="cmd-name">RENAME</span>
+          <span class="cmd-syntax">clave nuevaClave</span>
+        </div>
+        <div class="cmd-body">
+          <p>Cambia el nombre de una clave. Si <code>nuevaClave</code> ya existe, se sobreescribe. Si <code>clave</code> no existe, devuelve un error.</p>
+          <div class="returns">Retorna: <strong>OK</strong></div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">&gt;</span> SET nombre "joel"
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> RENAME nombre apodo
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">&gt;</span> GET apodo
+<span class="resp-str">"joel"</span>
+
+<span class="resp-muted">&gt;</span> GET nombre
+<span class="resp-nil">(nil)</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SELECT -->
+      <div class="cmd-block" id="SELECT">
+        <div class="cmd-block-header">
+          <span class="cmd-name">SELECT</span>
+          <span class="cmd-syntax">indice</span>
+        </div>
+        <div class="cmd-body">
+          <p>Cambia la base de datos activa para la conexion actual. El rango valido es de <code>0</code> a <code>DB_COUNT - 1</code> (por defecto 0–15). Cada conexion mantiene su propio indice — cambiar de base en una conexion no afecta a las demas.</p>
+          <div class="returns">Retorna: <strong>OK</strong></div>
+          <div class="callout info">
+            <span class="callout-icon">ℹ️</span>
+            <div class="callout-body">El cliente REPL actualiza el prompt automaticamente para mostrar la base activa: <code>velo 127.0.0.1:6380[<strong>3</strong>]&gt;</code></div>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+            <pre><span class="resp-muted">velo ...[0]&gt;</span> SELECT 3
+<span class="resp-ok">OK</span>
+
+<span class="resp-muted">velo ...[3]&gt;</span> DBSIZE
+<span class="resp-int">(integer) 0</span>           <span class="resp-muted"># base 3 esta vacia</span>
+
+<span class="resp-muted">velo ...[3]&gt;</span> SELECT 99
+<span class="resp-err">(error) ERR el indice de base de datos esta fuera de rango</span></pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">
+  <p>
+    <strong>@low-level-js/velo</strong> &nbsp;·&nbsp; v0.1.0 &nbsp;·&nbsp;
+    <a href="mailto:joel@alblandino.com">Joel Jaime</a> &nbsp;·&nbsp; MIT License
+  </p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

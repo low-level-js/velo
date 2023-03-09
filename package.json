@@ -1,0 +1,17 @@
+{
+  "name": "@low-level-js/velo",
+  "version": "0.1.0",
+  "description": "Almacen de datos en memoria accesible a traves de la red usando el protocolo RESP sobre TCP",
+  "type": "module",
+  "main": "src/server.js",
+  "author": "Joel Jaime <joel@alblandino.com>",
+  "license": "MIT",
+  "scripts": {
+    "server": "node src/server.js",
+    "client": "node src/client.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

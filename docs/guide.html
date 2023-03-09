@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guia de uso — Velo Docs</title>
+  <meta name="description" content="Instalacion, configuracion y primeros pasos con Velo." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="topbar-logo-dot"></span>velo
+  </a>
+  <span class="topbar-version">v0.1.0</span>
+  <nav class="topbar-nav">
+    <a href="index.html">Inicio</a>
+    <a href="guide.html">Guia</a>
+    <a href="commands.html">Comandos</a>
+    <a href="internals.html">Internos</a>
+    <a href="roadmap.html">Roadmap</a>
+  </nav>
+  <button class="menu-btn" aria-label="Abrir menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Guia</div>
+      <a class="sidebar-link" href="#requisitos"><span class="icon">✅</span>Requisitos</a>
+      <a class="sidebar-link" href="#instalacion"><span class="icon">📥</span>Instalacion</a>
+      <a class="sidebar-link" href="#servidor"><span class="icon">🖥️</span>Iniciar el servidor</a>
+      <a class="sidebar-link" href="#cliente"><span class="icon">💻</span>Cliente REPL</a>
+      <a class="sidebar-link" href="#env"><span class="icon">⚙️</span>Configuracion .env</a>
+      <a class="sidebar-link" href="#makefile"><span class="icon">🛠️</span>Makefile</a>
+      <a class="sidebar-link" href="#netcat"><span class="icon">🔌</span>Conectar con netcat</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Otras secciones</div>
+      <a class="sidebar-link" href="index.html"><span class="icon">🏠</span>Inicio</a>
+      <a class="sidebar-link" href="commands.html"><span class="icon">⌨️</span>Comandos</a>
+      <a class="sidebar-link" href="internals.html"><span class="icon">🔬</span>Internos</a>
+      <a class="sidebar-link" href="roadmap.html"><span class="icon">🗺️</span>Roadmap</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="content">
+
+      <h1 class="mt-0">Guia de uso</h1>
+      <p class="text-muted">Instalacion, configuracion y operacion de Velo paso a paso.</p>
+      <hr class="divider" />
+
+      <!-- REQUISITOS -->
+      <section id="requisitos">
+        <h2>Requisitos del sistema</h2>
+        <table>
+          <thead><tr><th>Requisito</th><th>Version minima</th><th>Notas</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Node.js</strong></td><td>20.0.0</td><td>Se requiere soporte de ESM con <code>import ... with { type: 'json' }</code> (Node 22+)</td></tr>
+            <tr><td><strong>npm</strong></td><td>9.0.0</td><td>Solo para leer el <code>package.json</code>; no instala paquetes externos</td></tr>
+            <tr><td><strong>make</strong></td><td>Cualquiera</td><td>Opcional; el Makefile es solo un atajo. Puedes usar <code>node</code> directamente</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body">
+            <strong>Node.js v22 recomendado</strong>
+            La sintaxis <code>import pkg from 'file.json' with { type: 'json' }</code> requiere Node.js 22.
+            En versiones anteriores puede usarse la sintaxis <code>assert</code>, pero esta depreciada.
+          </div>
+        </div>
+      </section>
+
+      <!-- INSTALACION -->
+      <section id="instalacion">
+        <h2>Instalacion</h2>
+        <p>No hay proceso de instalacion formal. Solo clonar y ejecutar.</p>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">bash</span></div>
+          <pre># 1. Clonar el repositorio
+git clone &lt;repo-url&gt;
+cd redis-clone
+
+# 2. Verificar la version de Node.js
+node --version
+# Debe mostrar v20.x.x o superior
+
+# 3. No hay npm install — cero dependencias externas</pre>
+        </div>
+
+        <div class="callout tip">
+          <span class="callout-icon">✦</span>
+          <div class="callout-body">
+            <strong>Sin npm install</strong>
+            El <code>package.json</code> tiene las secciones <code>dependencies</code> y <code>devDependencies</code> completamente vacias.
+            Velo usa exclusivamente la biblioteca estandar de Node.js.
+          </div>
+        </div>
+      </section>
+
+      <!-- SERVIDOR -->
+      <section id="servidor">
+        <h2>Iniciar el servidor</h2>
+        <p>El servidor TCP escucha conexiones entrantes y procesa comandos en formato RESP.</p>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">bash</span></div>
+          <pre># Con Makefile
+make server
+
+# Directamente con node
+node src/server.js
+
+# Con variables de entorno personalizadas
+PORT=7000 LOG_LEVEL=debug node src/server.js
+
+# En modo watch (recarga automatica en desarrollo)
+make dev</pre>
+        </div>
+
+        <p>Al arrancar, el servidor imprime en consola:</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">output</span></div>
+          <pre><span class="resp-ok">[velo] servidor iniciado en 127.0.0.1:6380</span>
+<span class="resp-muted">[velo] bases de datos: 16 | sweep: 1000ms | max conexiones: 100</span></pre>
+        </div>
+
+        <h3>Apagado limpio</h3>
+        <p>Al recibir <code>SIGTERM</code> o <code>SIGINT</code> (Ctrl+C), el servidor cierra todas las conexiones activas y detiene el sweep antes de terminar.</p>
+      </section>
+
+      <!-- CLIENTE -->
+      <section id="cliente">
+        <h2>Cliente REPL interactivo</h2>
+        <p>El cliente abre una sesion interactiva tipo REPL directamente en la terminal.</p>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">bash</span></div>
+          <pre># Con Makefile (usa HOST y PORT del .env)
+make client
+
+# Directamente con node
+node src/client.js
+
+# Conectar a un servidor remoto o con puerto personalizado
+node src/client.js 192.168.1.10 7000</pre>
+        </div>
+
+        <h3>Prompt dinamico</h3>
+        <p>El prompt muestra el host, puerto y base de datos activa en tiempo real:</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">repl</span></div>
+          <pre><span class="resp-ok">velo 127.0.0.1:6380[0]></span>   <span class="resp-muted">← base de datos 0</span>
+
+<span class="resp-ok">velo 127.0.0.1:6380[0]></span> SELECT 3
+<span class="resp-ok">OK</span>
+
+<span class="resp-ok">velo 127.0.0.1:6380[3]></span>   <span class="resp-muted">← cambio automatico a db 3</span></pre>
+        </div>
+
+        <h3>Colores por tipo de respuesta</h3>
+        <table>
+          <thead><tr><th>Color</th><th>Tipo de respuesta</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#3fb950">Verde</span></td><td>Simple String (exito)</td><td><code>OK</code>, <code>PONG</code></td></tr>
+            <tr><td><span style="color:#a5d6ff">Cyan</span></td><td>Bulk String (valor)</td><td><code>"joel"</code></td></tr>
+            <tr><td><span style="color:#e3b341">Amarillo</span></td><td>Integer</td><td><code>(integer) 42</code></td></tr>
+            <tr><td><span style="color:#8b949e">Gris</span></td><td>Nil (sin valor)</td><td><code>(nil)</code></td></tr>
+            <tr><td><span style="color:#f85149">Rojo</span></td><td>Error</td><td><code>(error) ERR ...</code></td></tr>
+          </tbody>
+        </table>
+
+        <h3>Comandos locales</h3>
+        <p>Estos comandos son procesados por el cliente y <strong>no</strong> se envian al servidor:</p>
+        <table>
+          <thead><tr><th>Comando</th><th>Accion</th></tr></thead>
+          <tbody>
+            <tr><td><code>exit</code> / <code>quit</code></td><td>Cierra la conexion y termina el cliente</td></tr>
+            <tr><td><code>clear</code></td><td>Limpia la pantalla de la terminal</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Historial</h3>
+        <p>El cliente guarda hasta <strong>200 entradas</strong> de historial. Navega con las teclas <kbd>↑</kbd> y <kbd>↓</kbd>.</p>
+      </section>
+
+      <!-- ENV -->
+      <section id="env">
+        <h2>Configuracion — archivo .env</h2>
+        <p>Todas las opciones del servidor se configuran en el archivo <code>.env</code> en la raiz del proyecto.</p>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">.env</span></div>
+          <pre>HOST=127.0.0.1
+PORT=6380
+MAX_CONNECTIONS=100
+LOG_LEVEL=info
+DB_COUNT=16
+SWEEP_INTERVAL_MS=1000</pre>
+        </div>
+
+        <table>
+          <thead><tr><th>Variable</th><th>Defecto</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>HOST</code></td><td><code>127.0.0.1</code></td>
+              <td>Host en el que escucha el servidor TCP. Usa <code>0.0.0.0</code> para aceptar conexiones externas.</td>
+            </tr>
+            <tr>
+              <td><code>PORT</code></td><td><code>6380</code></td>
+              <td>Puerto TCP del servidor. Cambiarlo evita conflictos con otros servicios locales.</td>
+            </tr>
+            <tr>
+              <td><code>MAX_CONNECTIONS</code></td><td><code>100</code></td>
+              <td>Maximo de conexiones simultaneas. Las conexiones que superen el limite reciben un error y se cierran.</td>
+            </tr>
+            <tr>
+              <td><code>LOG_LEVEL</code></td><td><code>info</code></td>
+              <td>Nivel de verbosidad: <code>debug</code> (todo), <code>info</code> (normal), <code>warn</code>, <code>error</code>.</td>
+            </tr>
+            <tr>
+              <td><code>DB_COUNT</code></td><td><code>16</code></td>
+              <td>Numero de bases de datos disponibles. El indice va de <code>0</code> a <code>DB_COUNT - 1</code>.</td>
+            </tr>
+            <tr>
+              <td><code>SWEEP_INTERVAL_MS</code></td><td><code>1000</code></td>
+              <td>Intervalo en milisegundos del sweep de claves expiradas. Reducirlo libera memoria mas rapido a costa de CPU.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Prioridad de configuracion</h3>
+        <p>Las variables de entorno del sistema operativo tienen prioridad sobre el archivo <code>.env</code>:</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">bash</span></div>
+          <pre># Esta variable sobreescribe lo que diga el .env
+PORT=7000 LOG_LEVEL=debug node src/server.js</pre>
+        </div>
+      </section>
+
+      <!-- MAKEFILE -->
+      <section id="makefile">
+        <h2>Makefile — comandos de desarrollo</h2>
+
+        <table>
+          <thead><tr><th>Comando</th><th>Descripcion</th></tr></thead>
+          <tbody>
+            <tr><td><code>make server</code></td><td>Inicia el servidor TCP con la configuracion del <code>.env</code></td></tr>
+            <tr><td><code>make client</code></td><td>Abre el cliente REPL interactivo</td></tr>
+            <tr><td><code>make dev</code></td><td>Inicia el servidor con recarga automatica al guardar (<code>--watch</code>)</td></tr>
+            <tr><td><code>make install</code></td><td>Verifica la version de Node.js instalada</td></tr>
+            <tr><td><code>make clean</code></td><td>Elimina archivos temporales y logs generados</td></tr>
+            <tr><td><code>make info</code></td><td>Muestra la configuracion activa leida desde el <code>.env</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-body">
+            El Makefile carga automaticamente las variables del <code>.env</code> usando <code>include .env</code> con <code>export</code>, por lo que todos los comandos heredan la configuracion sin necesidad de repetirla.
+          </div>
+        </div>
+      </section>
+
+      <!-- NETCAT -->
+      <section id="netcat">
+        <h2>Conectar con netcat o telnet</h2>
+        <p>Velo soporta texto plano (<em>inline</em>) ademas del protocolo RESP, lo que permite probarlo con herramientas de red estandar sin el cliente REPL:</p>
+
+        <div class="code-block">
+          <div class="code-block-header"><span class="code-block-lang">bash</span></div>
+          <pre># Usando netcat (nc)
+echo -e "PING\r" | nc 127.0.0.1 6380
+
+# Sesion interactiva
+nc 127.0.0.1 6380
+PING
++PONG
+SET nombre joel EX 60
++OK
+GET nombre
+$4
+joel</pre>
+        </div>
+
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body">
+            <strong>Solo para pruebas</strong>
+            El modo inline no soporta todos los tipos de argumentos RESP. Para uso en produccion, usa siempre el cliente REPL o un cliente que hable RESP nativo.
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">
+  <p>
+    <strong>@low-level-js/velo</strong> &nbsp;·&nbsp; v0.1.0 &nbsp;·&nbsp;
+    <a href="mailto:joel@alblandino.com">Joel Jaime</a> &nbsp;·&nbsp; MIT License
+  </p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
