@@ -7,5 +7,5 @@
 **Licencia:** MIT  
 **Plataforma:** Node.js >= 20
 
-> **Documentacion completa ->** [https://onidn.github.io/redis-clone/docs](https://onidn.github.io/redis-clone/docs)  
+> **Documentacion completa ->** [https://low-level-js.github.io/velo](https://low-level-js.github.io/velo)  
 > Guia de instalacion, referencia de comandos, arquitectura interna y roadmap.
